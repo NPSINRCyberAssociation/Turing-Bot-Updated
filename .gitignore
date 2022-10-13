@@ -133,3 +133,6 @@ dmypy.json
 
 # Poetry
 poetry.lock
+
+# Turing data files
+Turing-Bot-Updated/bot/data
