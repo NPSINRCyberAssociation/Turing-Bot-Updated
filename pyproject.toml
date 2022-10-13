@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "turing-bot-updated"
+version = "0.1.0"
+description = "Updated Turing Discord Bot"
+authors = ["Harikeshav R <r.harikeshav@gmail.com>"]
+readme = "README.md"
+packages = [{include = "turing_bot_updated"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+py-cord = {extras = ["speed", "voice"], version = "^2.2.2"}
+rich = "^12.6.0"
+python-dotenv = "^0.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
