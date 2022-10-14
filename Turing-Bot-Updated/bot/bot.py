@@ -6,6 +6,7 @@ from fnmatch import fnmatch
 
 import discord
 from discord.ext import commands, tasks
+import anvil.server
 
 # Setup logger.
 logger = logging.getLogger(__name__)
@@ -46,6 +47,8 @@ class Bot(commands.Bot):
         await self.wait_until_ready()
 
         logger.info(f"Logged in as {self.user}!")
+        ANVIL_UPLINK_TOKEN = os.getenv('ANVIL_UPLINK_TOKEN')
+		anvil.server.connect(ANVIL_UPLINK_TOKEN)
 
         await self.change_status.start()
 
