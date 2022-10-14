@@ -11,6 +11,8 @@ import anvil.server
 # Setup logger.
 logger = logging.getLogger(__name__)
 
+ANVIL_UPLINK_TOKEN = os.getenv('ANVIL_UPLINK_TOKEN')
+
 
 # Create bot.
 class Bot(commands.Bot):
@@ -47,10 +49,10 @@ class Bot(commands.Bot):
         await self.wait_until_ready()
 
         logger.info(f"Logged in as {self.user}!")
-        ANVIL_UPLINK_TOKEN = os.getenv('ANVIL_UPLINK_TOKEN')
-		anvil.server.connect(ANVIL_UPLINK_TOKEN)
 
         await self.change_status.start()
+
+        # anvil.server.connect(ANVIL_UPLINK_TOKEN)
 
     @tasks.loop(seconds=60)
     async def change_status(self):

@@ -1,12 +1,19 @@
 import json
 import logging
+import os
 
 import discord
 from discord.ext import commands
 
-import anvil
+from dotenv import load_dotenv
+
+import anvil.server
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+ANVIL_UPLINK_TOKEN = os.getenv('ANVIL_CLIENT_KEY')
 
 
 class Scoring(commands.Cog):
@@ -26,6 +33,10 @@ class Scoring(commands.Cog):
                     )):
         await ctx.defer()
 
+        logger.info(ANVIL_UPLINK_TOKEN)
+        logger.info("Hello")
+        anvil.server.connect(ANVIL_UPLINK_TOKEN)
+        anvil.server.call('solve_easy', team_name)
 
 
 def setup(bot):
