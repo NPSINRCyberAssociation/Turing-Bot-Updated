@@ -22,18 +22,27 @@ class ScorerModal(discord.ui.Modal):
     async def callback(self, interaction):
         title = "Submit"
         description = f"Your answer was {self.answer}!" \
-                      f"\n{self.children[0]}"
+                      f"\n{self.children[0].value}"
 
         embed = format_embed(title, description)
 
         await self.channel.send(embed=embed)
 
+        title = "Submit"
+        description = "The message was successfully sent!"
+
+        embed = format_embed(title, description)
+
+        await interaction.response.send_message(embed=embed)
+
 
 class ScorerButtons(discord.ui.View):
-    def __init__(self, channel, *args, **kwargs):
+    def __init__(self, channel, team_name, question_name, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.channel = channel
+        self.team_name = team_name
+        self.question_name = question_name
 
     @discord.ui.button(label="Correct!", style=discord.ButtonStyle.green)
     async def correct_button_callback(self, button, interaction):
@@ -42,7 +51,21 @@ class ScorerButtons(discord.ui.View):
         for child in self.children:
             child.disabled = True
 
-        await interaction.response.edit_message(view=self)
+        with open('bot\\data\\questions\\data.json', 'r') as data_file:
+            data = json.load(data_file)
+            data_file.close()
+
+        data[self.team_name]['solved_questions'].append(self.question_name)
+        data[self.team_name]['current_question'] = ''
+
+        with open('bot\\data\\questions\\data.json', 'w') as data_file:
+            json.dump(data, data_file)
+            data_file.close()
+
+        role = discord.utils.get(interaction.guild.roles, name=f"{self.team_name} {self.question_name}")
+        await role.delete()
+
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(label="Incorrect!", style=discord.ButtonStyle.danger)
     async def incorrect_button_callback(self, button, interaction):
@@ -51,12 +74,12 @@ class ScorerButtons(discord.ui.View):
         for child in self.children:
             child.disabled = True
 
-        await interaction.response.edit_message(view=self)
+        await interaction.edit_original_response(view=self)
 
 
 class AnswerModal(discord.ui.Modal):
     def __init__(self, question_name, *args, **kwargs):
-        super().__init__(*args, **kwargs, title=f"Submit your answer for {question_name}.")
+        super().__init__(*args, **kwargs, title=f"Answer for {question_name}.")
 
         self.question_name = question_name
 
@@ -66,14 +89,23 @@ class AnswerModal(discord.ui.Modal):
         title = "Submit: Success!"
         description = f"Team: {interaction.channel.category.name}" \
                       f"\nQuestion: {self.question_name}" \
-                      f"\nAnswer: {self.children[0]}"
+                      f"\nAnswer: {self.children[0].value}"
 
         embed = format_embed(title, description)
 
         # Get the submissions channel where all submissions will go.
         submissions_channel = discord.utils.get(interaction.guild.channels, name='submissions')
 
-        await submissions_channel.send(embed=embed, view=ScorerButtons(channel=interaction.channel))
+        await submissions_channel.send(embed=embed, view=ScorerButtons(channel=interaction.channel,
+                                                                       question_name=self.question_name,
+                                                                       team_name=interaction.channel.category.name))
+
+        title = "Submit: Success!"
+        description = f"Your answer for {self.question_name} has been sent to a scorer!" \
+                      " It will be evaluated and scored shortly."
+
+        embed = format_embed(title, description)
+        await interaction.response.send_message(embed=embed)
 
 
 class Submit(commands.Cog):
@@ -82,7 +114,7 @@ class Submit(commands.Cog):
 
     @commands.slash_command(name='submit', description="Submit your answer for the current problem.")
     async def _submit(self, ctx):
-        await ctx.defer()
+        # await ctx.defer()
 
         # Do not allow invoking of command outside the submit channel.
         if not ctx.channel.name == 'submit':
@@ -94,19 +126,19 @@ class Submit(commands.Cog):
             await ctx.respond(embed=embed)
 
         # Read the question status data file, or create it if it doesn't exist.
-        if not pathlib.Path('bot/data/questions/data.json').is_file():
+        if not pathlib.Path('bot\\data\\questions\\data.json').is_file():
             data = {}
 
             for team_name in ctx.guild.categories:
-                data[team_name] = {'current_question': '',
-                                   'solved_questions': []}
+                data[team_name.name] = {'current_question': '',
+                                        'solved_questions': []}
 
-            with open('bot/data/questions/data.json', 'w+') as data_file:
+            with open('bot\\data\\questions\\data.json', 'w+') as data_file:
                 json.dump(data, data_file)
                 data_file.close()
 
         else:
-            with open('bot/data/questions/data.json', 'r') as data_file:
+            with open('bot\\data\\questions\\data.json', 'r') as data_file:
                 data = json.load(data_file)
                 data_file.close()
 
@@ -129,13 +161,6 @@ class Submit(commands.Cog):
 
         # Create a modal for answering the question.
         await ctx.send_modal(AnswerModal(question_name=question_name))
-
-        title = "Submit: Success!"
-        description = f"Your answer for {question_name} has been sent to a scorer!" \
-                      " It will be evaluated and scored shortly."
-
-        embed = format_embed(title, description)
-        await ctx.respond(embed=embed)
 
 
 def setup(bot):

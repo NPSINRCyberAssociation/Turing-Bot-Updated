@@ -42,19 +42,19 @@ class Question(commands.Cog):
             return
 
         # Read the question status data file, or create it if it doesn't exist.
-        if not pathlib.Path('bot/data/questions/data.json').is_file():
+        if not pathlib.Path('bot\\data\\questions\\data.json').is_file():
             data = {}
 
             for team_name in ctx.guild.categories:
                 data[team_name.name] = {'current_question': '',
-                                   'solved_questions': []}
+                                        'solved_questions': []}
 
-            with open('bot/data/questions/data.json', 'w+') as data_file:
+            with open('bot\\data\\questions\\data.json', 'w+') as data_file:
                 json.dump(data, data_file)
                 data_file.close()
 
         else:
-            with open('bot/data/questions/data.json', 'r') as data_file:
+            with open('bot\\data\\questions\\data.json', 'r') as data_file:
                 data = json.load(data_file)
                 data_file.close()
 
@@ -69,21 +69,21 @@ class Question(commands.Cog):
         # Store all available questions into a dictionary, sorting by difficulty.
         questions_list = {
             "easy": [os.path.join(os.path.relpath(path), name) for path, sub_dirs, files in
-                     os.walk('bot/data/questions/easy') for name in files],
+                     os.walk('bot\\data\\questions\\easy') for name in files],
             "hard": [os.path.join(os.path.relpath(path), name) for path, sub_dirs, files in
-                     os.walk('bot/data/questions/hard') for name in files],
+                     os.walk('bot\\data\\questions\\hard') for name in files],
         }
 
         # Get the path of the randomly chosen question from questions_list.
         question_path = random.choice(
             [question for question in questions_list[difficulty]
              if question not in data[team_name]['solved_questions']])
-        question_name = '-'.join(question_path.split('/')[-1].split('.')[0].split(' ')).lower()
+        question_name = '-'.join(question_path.split('\\')[-1].split('.')[0].split(' ')).lower()
 
         # Store the random question as the current question and write to data file.
         data[team_name]['current_question'] = question_name
 
-        with open('bot/data/questions/data.json', 'w') as data_file:
+        with open('bot\\data\\questions\\data.json', 'w') as data_file:
             json.dump(data, data_file)
             data_file.close()
 
@@ -112,7 +112,7 @@ class Question(commands.Cog):
             embed = format_embed(title, description)
 
             await ctx.send(embed=embed)
-            await ctx.user.remove_roles(role)
+            await role.delete()
 
         # If the role doesn't exist (it was deleted after submission), don't do anything.
         except commands.RoleNotFound:
