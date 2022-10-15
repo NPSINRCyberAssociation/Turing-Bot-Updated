@@ -1,17 +1,16 @@
 import logging
 import os
 import random
-
 from fnmatch import fnmatch
 
+import anvil.server
 import discord
 from discord.ext import commands, tasks
-import anvil.server
 
 # Setup logger.
 logger = logging.getLogger(__name__)
 
-ANVIL_UPLINK_TOKEN = os.getenv('ANVIL_UPLINK_TOKEN')
+ANVIL_CLIENT_KEY = os.getenv("ANVIL_CLIENT_KEY")
 
 
 # Create bot.
@@ -28,12 +27,19 @@ class Bot(commands.Bot):
 
     def load_cogs(self):
         # Get all available cogs in bot/cogs directory and load them.
-        cog_list = [os.path.splitext('.'.join(os.path.join(os.path.relpath(path), name).split('\\')))[0]
-                    for path, sub_dirs, files in os.walk('bot\\cogs')
-                    for name in files if fnmatch(name, "*.py")]
+        cog_list = [
+            os.path.splitext(
+                ".".join(os.path.join(os.path.relpath(path), name).split("/"))
+            )[0]
+            for path, sub_dirs, files in os.walk("bot/cogs")
+            for name in files
+            if fnmatch(name, "*.py")
+        ]
+
+        logger.info(cog_list)
 
         for cog in cog_list:
-            if '__init__' in cog:
+            if "__init__" in cog:
                 continue
 
             logger.info(f"Loading {cog}...")
@@ -52,15 +58,18 @@ class Bot(commands.Bot):
 
         await self.change_status.start()
 
-        # anvil.server.connect(ANVIL_UPLINK_TOKEN)
+        anvil.server.connect(ANVIL_CLIENT_KEY)
 
     @tasks.loop(seconds=60)
     async def change_status(self):
         activities = [
             discord.Activity(
                 name=f"{len(self.guilds)} servers and {sum([guild.member_count for guild in self.guilds])} users!",
-                type=discord.ActivityType.watching),
-            discord.Activity(name="Use /help to get started!", type=discord.ActivityType.playing)
+                type=discord.ActivityType.watching,
+            ),
+            discord.Activity(
+                name="Use /help to get started!", type=discord.ActivityType.playing
+            ),
         ]
 
         logger.info("Refreshing status!")
