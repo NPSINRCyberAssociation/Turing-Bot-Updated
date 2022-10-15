@@ -6,9 +6,12 @@ from fnmatch import fnmatch
 
 import discord
 from discord.ext import commands, tasks
+import anvil.server
 
 # Setup logger.
 logger = logging.getLogger(__name__)
+
+ANVIL_UPLINK_TOKEN = os.getenv('ANVIL_UPLINK_TOKEN')
 
 
 # Create bot.
@@ -25,8 +28,8 @@ class Bot(commands.Bot):
 
     def load_cogs(self):
         # Get all available cogs in bot/cogs directory and load them.
-        cog_list = [os.path.splitext('.'.join(os.path.join(os.path.relpath(path), name).split('/')))[0]
-                    for path, sub_dirs, files in os.walk('bot/cogs')
+        cog_list = [os.path.splitext('.'.join(os.path.join(os.path.relpath(path), name).split('\\')))[0]
+                    for path, sub_dirs, files in os.walk('bot\\cogs')
                     for name in files if fnmatch(name, "*.py")]
 
         for cog in cog_list:
@@ -48,6 +51,8 @@ class Bot(commands.Bot):
         logger.info(f"Logged in as {self.user}!")
 
         await self.change_status.start()
+
+        # anvil.server.connect(ANVIL_UPLINK_TOKEN)
 
     @tasks.loop(seconds=60)
     async def change_status(self):
