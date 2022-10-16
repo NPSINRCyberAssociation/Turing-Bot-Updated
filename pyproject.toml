@@ -17,3 +17,8 @@ anvil-uplink = "^0.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pyright]
+venvPath = "/Users/hari/.virtualenvs"
+venv = "turing-bot-updated-ty17Q-qm-py3.10"
