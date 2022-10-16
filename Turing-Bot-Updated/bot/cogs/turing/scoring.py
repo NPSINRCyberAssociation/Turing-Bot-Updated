@@ -43,7 +43,70 @@ class Scoring(commands.Cog):
         anvil.server.call("solve_easy", team_name)
 
         title = "Scoring - Easy: Success!"
-        description = "Updated the score of {team_name} for solving an easy question!"
+        description = f"Updated the score of {team_name} for solving an easy question!"
+
+        embed = format_embed(title, description)
+        await ctx.respond(embed=embed)
+
+    @scoring.command(
+        name="hard", description="Transfer points between teams as per the teams wish."
+    )
+    async def _hard(
+        self,
+        ctx,
+        team_name_1: discord.Option(
+            str,
+            description="The team to add a point to.",
+            choices=[
+                team
+                for team, value in json.load(
+                    open("bot/data/questions/data.json", "r")
+                ).items()
+            ],
+        ),
+        team_name_2: discord.Option(
+            str,
+            description="The team to subtract a point from.",
+            choices=[
+                team
+                for team, value in json.load(
+                    open("bot/data/questions/data.json", "r")
+                ).items()
+            ],
+        ),
+    ):
+        await ctx.defer()
+
+        anvil.server.call("solve_hard", team_name_1, team_name_2)
+
+        title = "Scoring - Hard: Success!"
+        description = f"Updated the scores of {team_name_1} and {team_name_2} for solving a hard question!"
+
+        embed = format_embed(title, description)
+        await ctx.respond(embed=embed)
+
+    @scoring.command(name="set", description="Manually set the score of a team.")
+    async def _set(
+        self,
+        ctx,
+        team_name: discord.Option(
+            str,
+            description="The team to set the score.",
+            choices=[
+                team
+                for team, value in json.load(
+                    open("bot/data/questions/data.json", "r")
+                ).items()
+            ],
+        ),
+        score: discord.Option(int, description="The score to set."),
+    ):
+        await ctx.defer()
+
+        anvil.server.call("set_score", team_name, score)
+
+        title = "Scoring - Set: Success!"
+        description = f"Set the score of {team_name} to {score}!"
 
         embed = format_embed(title, description)
         await ctx.respond(embed=embed)

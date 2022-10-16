@@ -1,21 +1,23 @@
 import logging
 import os
 
+from bot.bot import Bot
 from dotenv import load_dotenv
 from rich.logging import RichHandler
-
-from bot.bot import Bot
 
 load_dotenv()
 
 # Get discord token
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 # Setup logging using rich's logging handler.
 FORMAT = "%(message)s"
 
 logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler(markup=True)]
+    level=logging.INFO,
+    format=FORMAT,
+    datefmt="[%X]",
+    handlers=[RichHandler(markup=True)],
 )
 
 logger = logging.getLogger()
