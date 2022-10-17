@@ -6,10 +6,15 @@ import pathlib
 import random
 
 import discord
+import anvil.server
 from bot.utils.embed import format_embed
 from discord.ext import commands
 
 logger = logging.getLogger(__name__)
+
+ANVIL_CLIENT_KEY = os.getenv("ANVIL_CLIENT_KEY")
+
+anvil.server.connect(ANVIL_CLIENT_KEY)
 
 
 class Question(commands.Cog):
@@ -41,18 +46,21 @@ class Question(commands.Cog):
             return
 
         # Read the question status data file, or create it if it doesn't exist.
-        if not pathlib.Path("bot/data/questions/data.json").is_file():
+        if not pathlib.Path("bot\\data\\questions\\data.json").is_file():
             data = {}
 
             for team_name in ctx.guild.categories:
                 data[team_name.name] = {"current_question": "", "solved_questions": []}
 
-            with open("bot/data/questions/data.json", "w+") as data_file:
+            with open("bot\\data\\questions\\data.json", "w+") as data_file:
                 json.dump(data, data_file)
                 data_file.close()
 
+            for team_name, value in json.load(open("bot\\data\\questions\\data.json", "r")).items():
+                anvil.server.call("add_team", team_name)
+
         else:
-            with open("bot/data/questions/data.json", "r") as data_file:
+            with open("bot\\data\\questions\\data.json", "r") as data_file:
                 data = json.load(data_file)
                 data_file.close()
 
@@ -70,12 +78,12 @@ class Question(commands.Cog):
         questions_list = {
             "easy": [
                 os.path.join(os.path.relpath(path), name)
-                for path, sub_dirs, files in os.walk("bot/data/questions/easy")
+                for path, sub_dirs, files in os.walk("bot\\data\\questions\\easy")
                 for name in files
             ],
             "hard": [
                 os.path.join(os.path.relpath(path), name)
-                for path, sub_dirs, files in os.walk("bot/data/questions/hard")
+                for path, sub_dirs, files in os.walk("bot\\data\\questions\\hard")
                 for name in files
             ],
         }
@@ -89,13 +97,13 @@ class Question(commands.Cog):
             ]
         )
         question_name = "-".join(
-            question_path.split("/")[-1].split(".")[0].split(" ")
+            question_path.split("\\")[-1].split(".")[0].split(" ")
         ).lower()
 
         # Store the random question as the current question and write to data file.
         data[team_name]["current_question"] = question_name
 
-        with open("bot/data/questions/data.json", "w") as data_file:
+        with open("bot\\data\\questions\\data.json", "w") as data_file:
             json.dump(data, data_file)
             data_file.close()
 

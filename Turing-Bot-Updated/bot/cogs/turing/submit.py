@@ -1,12 +1,19 @@
 import json
 import logging
 import pathlib
+import os
 
+import anvil.server
 import discord
 from bot.utils.embed import format_embed
 from discord.ext import commands
 
 logger = logging.getLogger(__name__)
+
+
+ANVIL_CLIENT_KEY = os.getenv("ANVIL_CLIENT_KEY")
+
+anvil.server.connect(ANVIL_CLIENT_KEY)
 
 
 class ScorerModal(discord.ui.Modal):
@@ -55,14 +62,14 @@ class ScorerButtons(discord.ui.View):
         for child in self.children:
             child.disabled = True
 
-        with open("bot/data/questions/data.json", "r") as data_file:
+        with open("bot\\data\\questions\\data.json", "r") as data_file:
             data = json.load(data_file)
             data_file.close()
 
         data[self.team_name]["solved_questions"].append(self.question_name)
         data[self.team_name]["current_question"] = ""
 
-        with open("bot/data/questions/data.json", "w") as data_file:
+        with open("bot\\data\\questions\\data.json", "w") as data_file:
             json.dump(data, data_file)
             data_file.close()
 
@@ -149,18 +156,21 @@ class Submit(commands.Cog):
             await ctx.respond(embed=embed)
 
         # Read the question status data file, or create it if it doesn't exist.
-        if not pathlib.Path("bot/data/questions/data.json").is_file():
+        if not pathlib.Path("bot\\data\\questions\\data.json").is_file():
             data = {}
 
             for team_name in ctx.guild.categories:
                 data[team_name.name] = {"current_question": "", "solved_questions": []}
 
-            with open("bot/data/questions/data.json", "w+") as data_file:
+            with open("bot\\data\\questions\\data.json", "w+") as data_file:
                 json.dump(data, data_file)
                 data_file.close()
 
+            for team_name, value in json.load(open("bot\\data\\questions\\data.json", "r")).items():
+                anvil.server.call("add_team", team_name)
+
         else:
-            with open("bot/data/questions/data.json", "r") as data_file:
+            with open("bot\\data\\questions\\data.json", "r") as data_file:
                 data = json.load(data_file)
                 data_file.close()
 
@@ -174,7 +184,7 @@ class Submit(commands.Cog):
         if question_name == "":
             title = "Submit: Error!"
             description = (
-                "There is no available question to answer! Generate a new question using the /question "
+                "There is no available question to answer! Generate a new question using the \\question "
                 "command in the problems channel "
             )
 

@@ -20,7 +20,7 @@ class Bot(commands.Bot):
         intents = discord.Intents().all()
 
         # Add debug guilds because registering slash commands take upwards of an hour.
-        super().__init__(debug_guilds=[1012219323898679306], intents=intents)
+        super().__init__(debug_guilds=[1030371263572615209, 1012219323898679306], intents=intents)
 
         # Load all cogs
         self.load_cogs()
@@ -29,9 +29,9 @@ class Bot(commands.Bot):
         # Get all available cogs in bot/cogs directory and load them.
         cog_list = [
             os.path.splitext(
-                ".".join(os.path.join(os.path.relpath(path), name).split("/"))
+                ".".join(os.path.join(os.path.relpath(path), name).split("\\"))
             )[0]
-            for path, sub_dirs, files in os.walk("bot/cogs")
+            for path, sub_dirs, files in os.walk("bot\\cogs")
             for name in files
             if fnmatch(name, "*.py")
         ]
