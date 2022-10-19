@@ -126,7 +126,7 @@ class Question(commands.Cog):
 
         # Send the timeout removal message if the timeout is still present.
         try:
-            title = "Question: Success!"
+            title = "Timeout Over"
             description = "Your timeout of 15 minutes has passed! You can request for a new question now."
 
             embed = format_embed(title, description)
