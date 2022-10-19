@@ -30,8 +30,14 @@ class ScorerModal(discord.ui.Modal):
         )
 
     async def callback(self, interaction):
-        title = "Submit"
-        description = f"Your answer was {self.answer}!" f"\n{self.children[0].value}"
+        if self.answer.lower() == 'correct':
+            title = f"✅ "
+
+        elif self.answer.lower() == 'incorrect':
+            title = f"❌ "
+
+        title += f"Your answer was {self.answer}!"
+        description = f"\n{self.children[0].value}"
 
         embed = format_embed(title, description)
 
@@ -103,7 +109,7 @@ class AnswerModal(discord.ui.Modal):
         )
 
     async def callback(self, interaction):
-        title = "Submit: Success!"
+        title = "Submission"
         description = (
             f"Team: {interaction.channel.category.name}"
             f"\nQuestion: {self.question_name}"
@@ -126,10 +132,9 @@ class AnswerModal(discord.ui.Modal):
             ),
         )
 
-        title = "Submit: Success!"
+        title = "Submission Sent"
         description = (
-            f"Your answer for {self.question_name} has been sent to a scorer!"
-            " It will be evaluated and scored shortly."
+            f"Your answer for {self.question_name} is being evaluated by a scorer!"
         )
 
         embed = format_embed(title, description)
@@ -184,7 +189,7 @@ class Submit(commands.Cog):
         if question_name == "":
             title = "Submit: Error!"
             description = (
-                "There is no available question to answer! Generate a new question using the \\question "
+                "There is no available question to answer! Generate a new question using the /question "
                 "command in the problems channel "
             )
 
