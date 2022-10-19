@@ -30,16 +30,18 @@ class ScorerModal(discord.ui.Modal):
         )
 
     async def callback(self, interaction):
+        color = discord.Color.from_rgb(0, 0, 0)
+
         if self.answer.lower() == 'correct':
-            title = f"✅ "
+            color = discord.Color.from_rgb(89, 227, 128)
 
         elif self.answer.lower() == 'incorrect':
-            title = f"❌ "
+            color = discord.Color.from_rgb(227, 68, 68)
 
-        title += f"Your answer was {self.answer}!"
+        title = f"Your answer was {self.answer}!"
         description = f"\n{self.children[0].value}"
 
-        embed = format_embed(title, description)
+        embed = format_embed(title, description, color)
 
         await self.channel.send(embed=embed)
 
